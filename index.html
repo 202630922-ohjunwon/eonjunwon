@@ -1,1 +1,572 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>슬먹기 - Google Style 급식 분석기</title>
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background-color: #F8F9FA;
+      color: #202124;
+    }
+    .g-card {
+      background: #FFFFFF;
+      border: 1px solid #DADCE0;
+      border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.08), 0 4px 8px rgba(60,64,67,0.04);
+    }
+    .g-btn-primary {
+      background-color: #1A73E8;
+      color: #FFFFFF;
+      border-radius: 100px;
+      font-weight: 500;
+      transition: background-color 0.2s, box-shadow 0.2s;
+    }
+    .g-btn-primary:hover {
+      background-color: #1557B0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .g-btn-secondary {
+      background-color: #F1F3F4;
+      color: #3C4043;
+      border-radius: 100px;
+      font-weight: 500;
+    }
+    .g-btn-secondary:hover {
+      background-color: #E8EAED;
+    }
+    .g-input {
+      border: 1px solid #DADCE0;
+      border-radius: 12px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .g-input:focus {
+      border-color: #1A73E8;
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+      outline: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
 
+  <!-- 메인 구글 카드 컨테이너 -->
+  <div class="w-full max-w-lg g-card p-6 sm:p-8 my-4 transition-all">
+
+    <!-- 글로벌 헤더 (시작 화면 제외한 1~4 단계에서 표시) -->
+    <header id="app-header" class="hidden mb-6">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-lg">bento</span>
+          </div>
+          <span class="text-lg font-bold tracking-tight text-slate-800">슬먹기</span>
+          <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">AI v3.0</span>
+        </div>
+        <button onclick="goToStep(0)" class="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">home</span> 처음으로
+        </button>
+      </div>
+
+      <!-- 프로그레스 바 (STEP 1~4) -->
+      <div id="progress-container" class="mt-4">
+        <div class="flex justify-between text-xs text-slate-400 mb-1.5 font-medium">
+          <span id="step-label">STEP 1. 급식표 입력</span>
+          <span id="step-number">1 / 4</span>
+        </div>
+        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+          <div id="progress-bar" class="bg-blue-600 h-full rounded-full transition-all duration-300" style="width: 25%;"></div>
+        </div>
+      </div>
+    </header>
+
+
+    <!-- STEP 0: 🚀 처음 시작 화면 (Google 랜딩) -->
+    <div id="step-0" class="step-content text-center py-6">
+      <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl mb-6 shadow-sm border border-blue-100">
+        <span class="material-symbols-outlined text-4xl">restaurant</span>
+      </div>
+      
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+        슬기로운 급식 생활,<br><span class="text-blue-600">슬먹기</span>
+      </h1>
+      <p class="text-sm text-slate-500 mb-8 max-w-xs mx-auto leading-relaxed">
+        오늘 급식, 먹을까 말까 고민되나요?<br>
+        메뉴만 입력하면 AI가 **자동으로 칼로리와 영양소**를 분석해서 최적의 판단을 내려드립니다.
+      </p>
+
+      <!-- 시작하기 버튼 -->
+      <button onclick="goToStep(1)" class="w-full g-btn-primary py-4 text-base flex items-center justify-center gap-2 shadow-sm">
+        <span>지금 시작하기</span>
+        <span class="material-symbols-outlined text-xl">arrow_forward</span>
+      </button>
+
+      <!-- 하단 안내 특징 -->
+      <div class="grid grid-cols-3 gap-2 mt-8 pt-6 border-t border-slate-100 text-center">
+        <div>
+          <div class="text-blue-600 mb-1"><span class="material-symbols-outlined text-xl">auto_awesome</span></div>
+          <div class="text-[11px] font-bold text-slate-700">스마트 자동분석</div>
+        </div>
+        <div>
+          <div class="text-emerald-600 mb-1"><span class="material-symbols-outlined text-xl">nutrition</span></div>
+          <div class="text-[11px] font-bold text-slate-700">영양소 추정 제공</div>
+        </div>
+        <div>
+          <div class="text-amber-500 mb-1"><span class="material-symbols-outlined text-xl">thumb_up</span></div>
+          <div class="text-[11px] font-bold text-slate-700">명확한 의사결정</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- STEP 1: 오늘 급식표 입력 -->
+    <div id="step-1" class="step-content hidden">
+      <h2 class="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
+        <span class="material-symbols-outlined text-blue-600">edit_note</span> 오늘 급식표 입력
+      </h2>
+      <p class="text-xs text-slate-500 mb-4">오늘 나올 급식 메뉴들을 쉼표(,)나 띄어쓰기로 구분해 적어주세요.</p>
+
+      <textarea id="menu-input" rows="3" class="w-full g-input p-3.5 text-sm resize-none" placeholder="예) 현미밥, 돈까스, 제육볶음, 된장찌개, 배추김치, 요구르트"></textarea>
+
+      <!-- 샘플 버튼 -->
+      <div class="mt-4">
+        <p class="text-xs font-semibold text-slate-400 mb-2">⚡ 예시 샘플로 빠르게 시작:</p>
+        <div class="flex flex-wrap gap-1.5">
+          <button onclick="setSample('현미밥, 돈까스, 스파게티, 양상추샐러드, 깍두기, 요구르트')" class="text-xs g-btn-secondary px-3 py-1.5">🌟 레전드 급식</button>
+          <button onclick="setSample('쌀밥, 코다리조림, 시금치나물, 배추김치, 숭늉')" class="text-xs g-btn-secondary px-3 py-1.5">🐟 호불호 급식</button>
+          <button onclick="setSample('흑미밥, 제육볶음, 된장찌개, 계란말이, 쌈채소, 배추김치')" class="text-xs g-btn-secondary px-3 py-1.5">🍚 무난한 한식</button>
+        </div>
+      </div>
+
+      <button onclick="goToStep2()" class="w-full g-btn-primary py-3.5 mt-6 flex items-center justify-center gap-2">
+        <span>음식 영양 분석하기</span>
+        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      </button>
+    </div>
+
+
+    <!-- STEP 2: 메뉴 분석 결과 및 영양소 직접 수정 -->
+    <div id="step-2" class="step-content hidden">
+      <div class="flex justify-between items-center mb-1">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-600">analytics</span> 음식별 자동 영양 분석
+        </h2>
+        <button onclick="addNewMenuPrompt()" class="text-xs text-blue-600 hover:bg-blue-50 font-bold px-2.5 py-1 rounded-lg border border-blue-200 flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">add</span> 메뉴 추가
+        </button>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">AI가 추정한 칼로리와 영양소입니다. 필요시 자유롭게 수정하세요.</p>
+
+      <div id="parsed-menu-list" class="space-y-3.5 max-h-[380px] overflow-y-auto pr-1">
+        <!-- JS 동적 생성 -->
+      </div>
+
+      <div class="flex gap-2 mt-6">
+        <button onclick="goToStep(1)" class="w-1/3 g-btn-secondary py-3 text-sm">이전</button>
+        <button onclick="analyzeLunch()" class="w-2/3 g-btn-primary py-3 text-sm flex items-center justify-center gap-1.5">
+          <span>최종 결과 판단하기</span>
+          <span class="material-symbols-outlined text-lg">psychology</span>
+        </button>
+      </div>
+    </div>
+
+
+    <!-- STEP 3: 분석 중 (로딩) -->
+    <div id="step-3" class="step-content hidden text-center py-12">
+      <div class="inline-block p-4 bg-blue-50 text-blue-600 rounded-full mb-4 animate-spin">
+        <span class="material-symbols-outlined text-4xl">sync</span>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 mb-1">급식 데이터 종합 판단 중...</h3>
+      <p class="text-xs text-slate-500">입력된 각 메뉴의 선호도와 영양 밸런스를 계산하고 있습니다.</p>
+    </div>
+
+
+    <!-- STEP 4: 최종 점수 및 종합 판정 -->
+    <div id="step-4" class="step-content hidden">
+      <div class="text-center mb-5">
+        <span id="result-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2">SSS급</span>
+        <h2 id="result-title" class="text-2xl font-extrabold text-slate-900">무조건 먹어야 함! 🔥</h2>
+        <p id="result-subtitle" class="text-xs text-slate-500 mt-1">오늘 안 먹으면 후회하는 레전드 급식입니다.</p>
+      </div>
+
+      <!-- 종합 점수 리포트 -->
+      <div class="bg-slate-50 rounded-2xl p-4 mb-4 border border-slate-200">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-xs font-bold text-slate-500">종합 평가 점수</span>
+          <span id="result-score" class="text-2xl font-black text-blue-600">88.5점</span>
+        </div>
+
+        <!-- 맛/영양 게이지 -->
+        <div class="space-y-2 text-xs mb-4">
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="text-slate-600">😋 맛 지수</span>
+              <span id="taste-score-text" class="font-bold">90%</span>
+            </div>
+            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+              <div id="taste-bar" class="bg-amber-400 h-full rounded-full" style="width: 90%;"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="text-slate-600">🥗 영양 균형 지수</span>
+              <span id="nutrition-score-text" class="font-bold">75%</span>
+            </div>
+            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+              <div id="nutrition-bar" class="bg-emerald-500 h-full rounded-full" style="width: 75%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 📊 자동으로 분석합산된 영양성분 표 -->
+        <div class="bg-white p-3 rounded-xl border border-slate-200">
+          <div class="text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm text-blue-500">pie_chart</span> 오늘 급식 총 영양성분</span>
+            <span class="text-[10px] text-slate-400">1인분 합계 기준</span>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
+            <div class="bg-slate-50 p-2 rounded-lg">
+              <div class="text-[10px] text-slate-400 mb-0.5">열량</div>
+              <div id="total-kcal" class="font-bold text-blue-600">650 kcal</div>
+            </div>
+            <div class="bg-slate-50 p-2 rounded-lg">
+              <div class="text-[10px] text-slate-400 mb-0.5">단백질</div>
+              <div id="total-protein" class="font-bold text-emerald-600">28 g</div>
+            </div>
+            <div class="bg-slate-50 p-2 rounded-lg">
+              <div class="text-[10px] text-slate-400 mb-0.5">탄수화물</div>
+              <div id="total-carbs" class="font-bold text-amber-600">95 g</div>
+            </div>
+            <div class="bg-slate-50 p-2 rounded-lg">
+              <div class="text-[10px] text-slate-400 mb-0.5">지방</div>
+              <div id="total-fat" class="font-bold text-rose-500">18 g</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 총평 -->
+      <div class="bg-blue-50/80 rounded-2xl p-4 mb-5 border border-blue-100">
+        <div class="text-xs font-bold text-blue-700 mb-1 flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">smart_toy</span> AI 영양 가이드
+        </div>
+        <p id="ai-comment" class="text-xs text-slate-700 leading-relaxed font-medium">
+          "분석 중입니다."
+        </p>
+      </div>
+
+      <!-- 리셋 버튼 -->
+      <button onclick="goToStep(1)" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 rounded-full transition flex items-center justify-center gap-2 text-sm">
+        <span class="material-symbols-outlined text-base">refresh</span>
+        <span>다른 날 급식 다시 검증하기</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    let currentStep = 0;
+    let menuItems = [];
+
+    // 🍲 1. 정밀 음식 데이터베이스 (학교 급식 자주 나오는 주요 음식들)
+    const FOOD_DATABASE = {
+      '현미밥': { kcal: 300, protein: 6, carbs: 65, fat: 2 },
+      '쌀밥': { kcal: 310, protein: 5, carbs: 68, fat: 1 },
+      '흑미밥': { kcal: 305, protein: 6, carbs: 66, fat: 2 },
+      '잡곡밥': { kcal: 295, protein: 7, carbs: 62, fat: 2 },
+      '돈까스': { kcal: 380, protein: 22, carbs: 25, fat: 20 },
+      '치킨까스': { kcal: 360, protein: 24, carbs: 22, fat: 18 },
+      '생선까스': { kcal: 330, protein: 18, carbs: 20, fat: 19 },
+      '제육볶음': { kcal: 290, protein: 21, carbs: 9, fat: 18 },
+      '소불고기': { kcal: 270, protein: 20, carbs: 11, fat: 16 },
+      '닭갈비': { kcal: 280, protein: 23, carbs: 10, fat: 15 },
+      '닭강정': { kcal: 350, protein: 20, carbs: 28, fat: 18 },
+      '후라이드치킨': { kcal: 340, protein: 25, carbs: 12, fat: 21 },
+      '계란말이': { kcal: 130, protein: 9, carbs: 2, fat: 9 },
+      '스파게티': { kcal: 330, protein: 11, carbs: 52, fat: 9 },
+      '떡볶이': { kcal: 280, protein: 6, carbs: 55, fat: 4 },
+      '된장찌개': { kcal: 90, protein: 6, carbs: 8, fat: 4 },
+      '김치찌개': { kcal: 110, protein: 8, carbs: 7, fat: 6 },
+      '미역국': { kcal: 50, protein: 3, carbs: 4, fat: 2 },
+      '콩나물국': { kcal: 40, protein: 3, carbs: 4, fat: 1 },
+      '양상추샐러드': { kcal: 45, protein: 1, carbs: 6, fat: 2 },
+      '배추김치': { kcal: 25, protein: 1, carbs: 4, fat: 0 },
+      '깍두기': { kcal: 25, protein: 1, carbs: 5, fat: 0 },
+      '시금치나물': { kcal: 40, protein: 2, carbs: 4, fat: 2 },
+      '콩나물무침': { kcal: 45, protein: 3, carbs: 5, fat: 2 },
+      '요구르트': { kcal: 65, protein: 1, carbs: 14, fat: 0 },
+      '우유': { kcal: 120, protein: 6, carbs: 9, fat: 7 },
+      '초코우유': { kcal: 160, protein: 6, carbs: 24, fat: 5 },
+      '아이스크림': { kcal: 180, protein: 3, carbs: 24, fat: 9 },
+      '조각케이크': { kcal: 220, protein: 3, carbs: 28, fat: 11 },
+      '사과': { kcal: 70, protein: 0, carbs: 18, fat: 0 },
+      '바나나': { kcal: 90, protein: 1, carbs: 23, fat: 0 }
+    };
+
+    // 🔍 2. 지능형 키워드 기반 영양소 추정 엔진 (DB에 없는 메뉴 자동 분석)
+    function analyzeNutrientsByName(name) {
+      const cleanName = name.trim();
+
+      // DB 일치 검사
+      if (FOOD_DATABASE[cleanName]) return { ...FOOD_DATABASE[cleanName] };
+
+      for (const key in FOOD_DATABASE) {
+        if (cleanName.includes(key) || key.includes(cleanName)) {
+          return { ...FOOD_DATABASE[key] };
+        }
+      }
+
+      // 키워드 파싱 규칙
+      if (/돈까스|까스|스테이크|함박|바베큐|탕수육|치킨|강정|튀김/.test(cleanName)) {
+        return { kcal: 360, protein: 20, carbs: 22, fat: 20 };
+      } else if (/불고기|제육|갈비|닭|고기|장조림|구이|수육|보쌈|찜/.test(cleanName)) {
+        return { kcal: 280, protein: 22, carbs: 8, fat: 17 };
+      } else if (/밥|파스타|스파게티|면|국수|우동|짜장|짬뽕|떡볶이/.test(cleanName)) {
+        return { kcal: 320, protein: 7, carbs: 62, fat: 4 };
+      } else if (/찌개|국|탕|스프|전골/.test(cleanName)) {
+        return { kcal: 90, protein: 5, carbs: 8, fat: 4 };
+      } else if (/김치|깍두기|나물|무침|샐러드|쌈|겉절이|피클/.test(cleanName)) {
+        return { kcal: 35, protein: 1, carbs: 5, fat: 1 };
+      } else if (/우유|요구르트|주스|음료|푸딩|케이크|빵|파이|아이스크림|과일|사과|포도|귤|수박/.test(cleanName)) {
+        return { kcal: 120, protein: 2, carbs: 22, fat: 3 };
+      }
+
+      // 기본 평균값
+      return { kcal: 180, protein: 8, carbs: 20, fat: 6 };
+    }
+
+    function setSample(text) {
+      document.getElementById('menu-input').value = text;
+    }
+
+    // 스텝 전환 컨트롤러
+    function goToStep(step) {
+      currentStep = step;
+      const header = document.getElementById('app-header');
+
+      // 헤더 및 프로그레스 바 제어
+      if (step === 0) {
+        header.classList.add('hidden');
+      } else {
+        header.classList.remove('hidden');
+        document.getElementById('step-label').innerText = `STEP ${step}. ${getStepTitle(step)}`;
+        document.getElementById('step-number').innerText = `${step} / 4`;
+        document.getElementById('progress-bar').style.width = `${(step / 4) * 100}%`;
+      }
+
+      document.querySelectorAll('.step-content').forEach((el, index) => {
+        if (index === step) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      });
+    }
+
+    function getStepTitle(step) {
+      switch(step) {
+        case 1: return '급식표 입력';
+        case 2: return '음식 및 영양 검토';
+        case 3: return '급식 종합 분석 중';
+        case 4: return '최종 판단 결과';
+        default: return '';
+      }
+    }
+
+    // STEP 1 -> STEP 2: 메뉴 파싱 & 영양소 자동 할당
+    function goToStep2() {
+      const rawText = document.getElementById('menu-input').value.trim();
+      if (!rawText) {
+        alert('오늘의 급식 메뉴를 입력해주세요!');
+        return;
+      }
+
+      const rawList = rawText.split(/[,|\n]+/).map(s => s.trim()).filter(s => s.length > 0);
+      if (rawList.length === 0) return;
+
+      menuItems = rawList.map((name, index) => {
+        const nut = analyzeNutrientsByName(name);
+        return {
+          id: index,
+          name: name,
+          score: 7,
+          kcal: nut.kcal,
+          protein: nut.protein,
+          carbs: nut.carbs,
+          fat: nut.fat
+        };
+      });
+
+      renderMenuList();
+      goToStep(2);
+    }
+
+    function addNewMenuPrompt() {
+      const newName = prompt('추가할 음식 이름을 입력하세요:');
+      if (newName && newName.trim().length > 0) {
+        const name = newName.trim();
+        const nut = analyzeNutrientsByName(name);
+        menuItems.push({
+          id: Date.now(),
+          name: name,
+          score: 7,
+          kcal: nut.kcal,
+          protein: nut.protein,
+          carbs: nut.carbs,
+          fat: nut.fat
+        });
+        renderMenuList();
+      }
+    }
+
+    function deleteMenuItem(id) {
+      menuItems = menuItems.filter(m => m.id !== id);
+      renderMenuList();
+    }
+
+    // STEP 2 UI 렌더링
+    function renderMenuList() {
+      const container = document.getElementById('parsed-menu-list');
+      container.innerHTML = '';
+
+      if (menuItems.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">등록된 메뉴가 없습니다. 상단에서 추가해주세요.</div>`;
+        return;
+      }
+
+      menuItems.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs flex flex-col gap-2.5';
+        div.innerHTML = `
+          <div class="flex justify-between items-center gap-2">
+            <span class="font-bold text-slate-800 text-sm">${item.name}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-amber-500 font-bold">⭐ <span id="score-val-${item.id}">${item.score}</span>점</span>
+              <button onclick="deleteMenuItem(${item.id})" class="text-slate-400 hover:text-red-500">
+                <span class="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+          </div>
+          
+          <div>
+            <input type="range" min="1" max="10" value="${item.score}" 
+              oninput="updateItemData(${item.id}, 'score', parseInt(this.value)); document.getElementById('score-val-${item.id}').innerText = this.value;" 
+              class="w-full accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+          </div>
+
+          <!-- ✏️ 자동 분석된 영양소 및 수정 필드 -->
+          <div class="bg-white p-2.5 rounded-xl border border-slate-200 grid grid-cols-4 gap-1.5 text-center">
+            <div>
+              <label class="block text-[9px] text-slate-400 mb-0.5">열량(kcal)</label>
+              <input type="number" value="${item.kcal}" onchange="updateItemData(${item.id}, 'kcal', parseFloat(this.value) || 0)"
+                class="w-full text-center bg-slate-50 border border-slate-200 rounded py-0.5 font-medium text-slate-700">
+            </div>
+            <div>
+              <label class="block text-[9px] text-slate-400 mb-0.5">단백질(g)</label>
+              <input type="number" value="${item.protein}" onchange="updateItemData(${item.id}, 'protein', parseFloat(this.value) || 0)"
+                class="w-full text-center bg-slate-50 border border-slate-200 rounded py-0.5 font-medium text-slate-700">
+            </div>
+            <div>
+              <label class="block text-[9px] text-slate-400 mb-0.5">탄수화물(g)</label>
+              <input type="number" value="${item.carbs}" onchange="updateItemData(${item.id}, 'carbs', parseFloat(this.value) || 0)"
+                class="w-full text-center bg-slate-50 border border-slate-200 rounded py-0.5 font-medium text-slate-700">
+            </div>
+            <div>
+              <label class="block text-[9px] text-slate-400 mb-0.5">지방(g)</label>
+              <input type="number" value="${item.fat}" onchange="updateItemData(${item.id}, 'fat', parseFloat(this.value) || 0)"
+                class="w-full text-center bg-slate-50 border border-slate-200 rounded py-0.5 font-medium text-slate-700">
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function updateItemData(id, key, value) {
+      const item = menuItems.find(m => m.id === id);
+      if (item) item[key] = value;
+    }
+
+    // STEP 3 & 4: 알고리즘 연산
+    function analyzeLunch() {
+      if (menuItems.length === 0) {
+        alert('최소 1개 이상의 메뉴가 존재해야 합니다.');
+        return;
+      }
+
+      goToStep(3);
+
+      setTimeout(() => {
+        const totalItems = menuItems.length;
+        const totalTaste = menuItems.reduce((acc, cur) => acc + cur.score, 0);
+        const avgTaste = (totalTaste / (totalItems * 10)) * 100;
+
+        const sumKcal = menuItems.reduce((acc, cur) => acc + cur.kcal, 0);
+        const sumProtein = menuItems.reduce((acc, cur) => acc + cur.protein, 0);
+        const sumCarbs = menuItems.reduce((acc, cur) => acc + cur.carbs, 0);
+        const sumFat = menuItems.reduce((acc, cur) => acc + cur.fat, 0);
+
+        let nutritionScore = 60;
+        if (sumProtein >= 20) nutritionScore += 20;
+        if (sumKcal >= 550 && sumKcal <= 850) nutritionScore += 20;
+
+        let finalScore = (avgTaste * 0.65) + (nutritionScore * 0.35);
+        finalScore = Math.min(Math.round(finalScore * 10) / 10, 100);
+
+        renderResults(finalScore, Math.round(avgTaste), nutritionScore, sumKcal, sumProtein, sumCarbs, sumFat);
+        goToStep(4);
+      }, 900);
+    }
+
+    function renderResults(score, tasteScore, nutritionScore, kcal, protein, carbs, fat) {
+      const badge = document.getElementById('result-badge');
+      const title = document.getElementById('result-title');
+      const subtitle = document.getElementById('result-subtitle');
+      const scoreText = document.getElementById('result-score');
+      
+      document.getElementById('total-kcal').innerText = `${Math.round(kcal)} kcal`;
+      document.getElementById('total-protein').innerText = `${Math.round(protein)} g`;
+      document.getElementById('total-carbs').innerText = `${Math.round(carbs)} g`;
+      document.getElementById('total-fat').innerText = `${Math.round(fat)} g`;
+
+      scoreText.innerText = `${score}점`;
+      document.getElementById('taste-score-text').innerText = `${tasteScore}%`;
+      document.getElementById('taste-bar').style.width = `${tasteScore}%`;
+      document.getElementById('nutrition-score-text').innerText = `${nutritionScore}%`;
+      document.getElementById('nutrition-bar').style.width = `${nutritionScore}%`;
+
+      const aiComment = document.getElementById('ai-comment');
+
+      if (score >= 85) {
+        badge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 bg-red-100 text-red-600 border border-red-200";
+        badge.innerText = "🏆 SSS급 (명약 급식)";
+        title.innerText = "급식실 1등 도착 필수! 🔥";
+        subtitle.innerText = "맛과 영양을 모두 잡은 완벽한 급식입니다.";
+        aiComment.innerText = `분석된 총 칼로리는 ${Math.round(kcal)}kcal, 단백질 ${Math.round(protein)}g으로 영양학적으로 훌륭하며 입맛 만족도 또한 매우 높습니다!`;
+      } else if (score >= 70) {
+        badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black mb-2 bg-amber-100 text-amber-700 border border-amber-200";
+        badge.innerText = "😋 A급 (꿀맛 급식)";
+        title.innerText = "든든한 한 끼! 먹길 추천 🍱";
+        subtitle.innerText = "만족도가 높고 영양도 무난하게 갖춰졌습니다.";
+        aiComment.innerText = `선호도와 영양이 적절히 균형을 이루고 있습니다 (단백질 ${Math.round(protein)}g 획득 가능). 맛있는 식사를 즐겨보세요.`;
+      } else if (score >= 55) {
+        badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black mb-2 bg-blue-100 text-blue-700 border border-blue-200";
+        badge.innerText = "😐 B급 (평범 급식)";
+        title.innerText = "배고프면 먹고 아니면 탐색 🍞";
+        subtitle.innerText = "배고프다면 먹되, 약간의 호불호가 있습니다.";
+        aiComment.innerText = `총 열량은 ${Math.round(kcal)}kcal 수준이지만 일부 메뉴의 선호도가 무난합니다. 좋아하는 반찬 위주로 드셔보세요.`;
+      } else {
+        badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black mb-2 bg-slate-200 text-slate-700 border border-slate-300";
+        badge.innerText = "🏃‍♂️ C/F급 (비상 급식)";
+        title.innerText = "급식실 탈출! 매점으로 🏃";
+        subtitle.innerText = "오늘은 매점이나 도시락이 정신 건강에 이롭습니다.";
+        aiComment.innerText = `선호도 점수가 낮게 측정되었습니다. 오늘은 매점 빵이나 비상용 간식으로 맛있는 한 끼를 대체하는 것을 추천합니다!`;
+      }
+    }
+  </script>
+</body>
+</html>
